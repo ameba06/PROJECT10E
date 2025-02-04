@@ -1,0 +1,46 @@
+
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>
+ 
+ char ssid[] = "Tatka_Vatutinki";
+ char password[] = "kuderso1";
+
+#define BOTtoken "8029532305:AAExRDOvL2h8NRGf2GeyJUl2weK9JigRSg8"
+
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOTtoken, client);
+
+String keyboardJson = "[[\"/ledon\", \"/ledoff\"]]";
+void setup(){
+  Serial.begin(9600);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+  }
+} 
+void loop() {
+  int numNewMessages = bot.getUpdates(
+            bot.last_message_received + 1);
+    handleNewMessages(numNewMessages);
+}
+
+void handleNewMessages(int numNewMessages) {
+  for (int i = 0; i < numNewMessages; i++) {
+    String chat_id = String(bot.messages[i].chat_id);
+    String text = bot.messages[i].text;
+    if (text == "/ledon"){
+      Serial.println("turnOn");
+      bot.sendMessage(chat_id, "Relay is ON","");
+    }
+    if (text == "/ledoff"){
+      Serial.println("turnOff");
+      bot.sendMessage(chat_id, "Relay is OFF","");
+    }
+    if (text == "/start"){
+      bot.sendMessageWithReplyKeyboard(chat_id, 
+      "Choose from one of the following options",
+      "", keyboardJson, true);
+    }
+  }
+}
